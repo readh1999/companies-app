@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#c8960c"/>
+<meta name="description" content="نظام إدارة الشركات - وزارة الدفاع العراقية"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icons/icon-192x192.png"/>
+<title>الشركات - وزارة الدفاع العراقية</title>
+
+<!-- External Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.umd.min.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@300;400;600;700;900&display=swap');
+
+:root {
+  --gold: #c8960c;
+  --gold-light: #e8b832;
+  --gold-dark: #8a6500;
+  --gold-pale: #f5e08a;
+  --bg-dark: #0d0a05;
+  --bg-med: #1a1208;
+  --bg-card: #221a08;
+  --bg-card2: #2a2010;
+  --border: #4a3800;
+  --border-light: #7a6020;
+  --text-main: #f0e0a0;
+  --text-dim: #b89040;
+  --text-muted: #806030;
+  --red: #cc2200;
+  --red-bg: rgba(204,34,0,0.15);
+  --yellow: #cc8800;
+  --yellow-bg: rgba(204,136,0,0.15);
+  --green: #2a8c30;
+  --green-bg: rgba(42,140,48,0.15);
+  --shadow: 0 4px 24px rgba(0,0,0,0.6);
+  --shadow-gold: 0 0 20px rgba(200,150,12,0.3);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Cairo', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(ellipse at 20% 20%, rgba(200,150,12,0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(200,150,12,0.03) 0%, transparent 50%);
+}
+
+/* ======= HEADER ======= */
+.header {
+  background: linear-gradient(135deg, #0d0a05 0%, #1a1208 50%, #0d0a05 100%);
+  border-bottom: 2px solid var(--gold-dark);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.8), 0 0 60px rgba(200,150,12,0.1);
+  padding: 0 24px;
+  position: sticky; top: 0; z-index: 100;
+}
+
+.header-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  max-width: 1800px; margin: 0 auto; padding: 10px 0;
+  gap: 16px;
+}
+
+.header-logo {
+  display: flex; align-items: center; gap: 16px;
+}
+
+.logo-img {
+  width: 70px; height: 70px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 20px rgba(200,150,12,0.5);
+  object-fit: cover;
+}
+
+.header-title h1 {
+  font-family: 'Amiri', serif;
+  font-size: 1.8rem;
+  color: var(--gold-light);
+  text-shadow: 0 0 20px rgba(200,150,12,0.5);
+  letter-spacing: 1px;
+}
+
+.header-title p {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+}
+
+.header-actions {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 6px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-card2);
+  color: var(--text-main); cursor: pointer;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.82rem; font-weight: 600;
+  transition: all 0.2s; white-space: nowrap;
+}
+.btn:hover { background: var(--gold-dark); border-color: var(--gold); color: #fff; transform: translateY(-1px); }
+.btn-gold { background: linear-gradient(135deg, var(--gold-dark), var(--gold)); border-color: var(--gold-light); color: #fff; }
+.btn-gold:hover { background: linear-gradient(135deg, var(--gold), var(--gold-light)); box-shadow: var(--shadow-gold); }
+.btn-red { background: rgba(180,30,0,0.3); border-color: #cc3300; color: #ff8866; }
+.btn-red:hover { background: rgba(200,50,0,0.5); }
+.btn-sm { padding: 5px 10px; font-size: 0.75rem; }
+.btn-icon { padding: 8px; min-width: 36px; justify-content: center; }
+
+/* ======= STATS BAR ======= */
+.stats-bar {
+  display: flex; gap: 12px; padding: 12px 24px;
+  background: var(--bg-med);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  max-width: 1800px; margin: 0 auto;
+}
+
+.stat-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 16px; border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  white-space: nowrap; font-size: 0.82rem;
+}
+.stat-chip .num { font-weight: 700; font-size: 1rem; }
+.stat-chip.total .num { color: var(--gold-light); }
+.stat-chip.red-stat .num { color: #ff6644; }
+.stat-chip.yellow-stat .num { color: #ffbb44; }
+.stat-chip.green-stat .num { color: #66cc66; }
+
+/* ======= MAIN LAYOUT ======= */
+.main-wrap {
+  max-width: 1800px; margin: 0 auto;
+  padding: 20px 24px;
+}
+
+/* ======= SEARCH & FILTERS ======= */
+.search-bar {
+  display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+}
+
+.search-input-wrap {
+  flex: 1; min-width: 200px; position: relative;
+}
+
+.search-input-wrap input {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  color: var(--text-main);
+  padding: 10px 40px 10px 16px;
+  border-radius: 8px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.9rem;
+}
+.search-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--gold); font-size: 1rem;
+}
+
+.filter-chips {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+}
+.filter-chip {
+  padding: 6px 14px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--bg-card);
+  color: var(--text-dim); cursor: pointer; font-size: 0.8rem;
+  transition: all 0.2s;
+}
+.filter-chip.active { background: var(--gold-dark); border-color: var(--gold); color: #fff; }
+.filter-chip:hover { border-color: var(--gold); }
+
+/* ======= TABLE ======= */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  background: var(--bg-card);
+}
+
+table {
+  width: 100%; border-collapse: collapse;
+  min-width: 900px;
+}
+
+thead tr {
+  background: linear-gradient(135deg, #221a08, #2e2410);
+  border-bottom: 2px solid var(--gold-dark);
+}
+
+th {
+  padding: 12px 10px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--gold-light);
+  font-weight: 700;
+  white-space: nowrap;
+  border-left: 1px solid var(--border);
+  letter-spacing: 0.5px;
+}
+th:last-child { border-left: none; }
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+  cursor: pointer;
+}
+tbody tr:hover { background: rgba(200,150,12,0.07); }
+tbody tr:last-child { border-bottom: none; }
+
+td {
+  padding: 10px;
+  text-align: center;
+  font-size: 0.82rem;
+  border-left: 1px solid rgba(74,56,0,0.4);
+  vertical-align: middle;
+  color: var(--text-main);
+}
+td:last-child { border-left: none; }
+
+/* Row status colors */
+tbody tr.status-expired { background: rgba(204,34,0,0.12); }
+tbody tr.status-expired:hover { background: rgba(204,34,0,0.2); }
+tbody tr.status-active { background: rgba(200,136,0,0.08); }
+tbody tr.status-active:hover { background: rgba(200,136,0,0.15); }
+tbody tr.status-entered { background: rgba(180,30,0,0.15); }
+
+/* تم الدخول overlay */
+.entered-badge {
+  display: inline-block;
+  background: var(--red);
+  color: #fff;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.date-expired { color: #ff6644; font-weight: 700; }
+.date-active { color: #ffbb44; font-weight: 700; }
+
+.actions-cell { display: flex; gap: 4px; justify-content: center; }
+
+/* ======= FORM MODAL ======= */
+.overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(4px);
+  display: none; align-items: flex-start; justify-content: center;
+  padding: 20px; overflow-y: auto;
+}
+.overlay.open { display: flex; }
+
+.modal {
+  background: linear-gradient(160deg, #221a08 0%, #1a1208 100%);
+  border: 1px solid var(--gold-dark);
+  border-radius: 16px;
+  width: 100%; max-width: 900px;
+  box-shadow: 0 8px 60px rgba(0,0,0,0.9), 0 0 40px rgba(200,150,12,0.15);
+  position: relative;
+  margin: auto;
+}
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(200,150,12,0.1), transparent);
+}
+.modal-header h2 {
+  font-family: 'Amiri', serif;
+  font-size: 1.4rem; color: var(--gold-light);
+}
+
+.modal-body { padding: 24px; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.form-group {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.form-group.full { grid-column: 1 / -1; }
+
+.form-group label {
+  font-size: 0.8rem; color: var(--gold-light);
+  font-weight: 600; letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  background: var(--bg-med);
+  border: 1px solid var(--border-light);
+  color: var(--text-main);
+  padding: 9px 12px;
+  border-radius: 7px;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.85rem;
+  transition: border-color 0.2s;
+}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none; border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(200,150,12,0.2);
+}
+.form-group textarea { resize: vertical; min-height: 80px; }
+
+/* Autocomplete dropdown */
+.autocomplete-wrap { position: relative; }
+.autocomplete-list {
+  position: absolute; top: 100%; right: 0; left: 0; z-index: 300;
+  background: var(--bg-card2);
+  border: 1px solid var(--gold-dark);
+  border-radius: 6px;
+  max-height: 180px; overflow-y: auto;
+  display: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+}
+.autocomplete-list.open { display: block; }
+.autocomplete-item {
+  padding: 8px 12px; cursor: pointer;
+  font-size: 0.82rem; color: var(--text-main);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.autocomplete-item:hover { background: rgba(200,150,12,0.15); color: var(--gold-light); }
+.autocomplete-item:last-child { border-bottom: none; }
+
+/* Date range row */
+.date-range { display: flex; gap: 10px; align-items: center; }
+.date-range > * { flex: 1; }
+.date-sep { color: var(--text-dim); font-size: 0.8rem; white-space: nowrap; }
+
+/* Modal footer */
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;
+}
+
+/* ======= CUSTOM FIELDS SECTION ======= */
+.custom-fields-section {
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+.custom-fields-section h4 {
+  color: var(--gold-light); font-size: 0.9rem; margin-bottom: 12px;
+}
+
+.custom-field-row {
+  display: flex; gap: 8px; align-items: flex-start;
+  margin-bottom: 10px; flex-wrap: wrap;
+}
+
+/* ======= COMPANY DETAIL PANEL ======= */
+.detail-panel {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 16px;
+}
+.detail-panel h3 {
+  font-family: 'Amiri', serif;
+  color: var(--gold-light);
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+/* History entries */
+.history-entry {
+  background: var(--bg-med);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-right: 3px solid var(--gold-dark);
+}
+.history-entry.expired { border-right-color: var(--red); }
+.history-entry.active { border-right-color: var(--yellow); }
+
+/* ======= NOTIFICATIONS ======= */
+.toast-container {
+  position: fixed; bottom: 24px; left: 24px; z-index: 999;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  padding: 12px 20px;
+  border-radius: 8px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  font-size: 0.85rem;
+  box-shadow: var(--shadow);
+  animation: slideIn 0.3s ease;
+  max-width: 320px;
+}
+.toast.success { border-color: var(--green); color: #66cc66; }
+.toast.error { border-color: var(--red); color: #ff6644; }
+.toast.info { border-color: var(--gold); color: var(--gold-light); }
+@keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* ======= EMPTY STATE ======= */
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  color: var(--text-muted);
+}
+.empty-state .icon { font-size: 4rem; margin-bottom: 16px; opacity: 0.4; }
+.empty-state p { font-size: 1.1rem; }
+
+/* ======= SCROLLBAR ======= */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+/* ======= PRINT STYLES ======= */
+@media print {
+  body { background: #fff; color: #000; font-size: 11pt; }
+  .header-actions, .search-bar, .filter-chips, .actions-cell,
+  .btn, .toast-container, .overlay { display: none !important; }
+  .header {
+    background: #fff !important; border-bottom: 2px solid #000;
+    position: static !important;
+    -webkit-print-color-adjust: exact;
+  }
+  .header-title h1 { color: #000 !important; text-shadow: none; }
+  .header-title p { color: #333 !important; }
+  table { width: 100% !important; border-collapse: collapse; }
+  th, td { border: 1px solid #999 !important; padding: 6px 8px !important; color: #000 !important; font-size: 9pt; }
+  thead tr { background: #ddd !important; }
+  tbody tr.status-expired { background: #ffcccc !important; -webkit-print-color-adjust: exact; }
+  tbody tr.status-active { background: #fff3cc !important; -webkit-print-color-adjust: exact; }
+  .entered-badge { background: #cc0000 !important; color: #fff !important; -webkit-print-color-adjust: exact; }
+  .stats-bar { display: flex !important; border: 1px solid #ccc; margin-bottom: 10px; }
+  .stat-chip { color: #000 !important; background: #eee !important; }
+  .table-wrap { border: 1px solid #999; overflow: visible !important; box-shadow: none; }
+  @page { margin: 15mm; size: A4 landscape; }
+}
+
+/* Divider */
+.section-divider {
+  border: none; border-top: 1px solid var(--border);
+  margin: 20px 0;
+}
+
+/* Add field type tag */
+.field-type-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 0.7rem; background: rgba(200,150,12,0.2);
+  border: 1px solid var(--gold-dark); color: var(--gold-light);
+}
+
+.checkbox-wrap {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 0;
+}
+.checkbox-wrap input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--gold); }
+.checkbox-wrap label { cursor: pointer; font-size: 0.9rem; }
+
+/* ======= RESPONSIVE ======= */
+@media (max-width: 768px) {
+  .header-inner { flex-wrap: wrap; }
+  .header-title h1 { font-size: 1.3rem; }
+  .logo-img { width: 50px; height: 50px; }
+  .main-wrap { padding: 12px; }
+  table { min-width: 700px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-logo">
+      <img src="icons/logo.png" class="logo-img" alt="شعار"/>
+      <div class="header-title">
+        <h1>نظام إدارة الشركات</h1>
+        <p>وزارة الدفاع العراقية · Iraqi Ministry of Defence</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-gold" onclick="openModal()">➕ إضافة سجل</button>
+      <button class="btn" onclick="openCustomFieldModal()">⚙️ إضافة حقل</button>
+      <button class="btn" onclick="exportExcel()">📊 Excel</button>
+      <button class="btn" onclick="exportWord()">📄 Word</button>
+      <button class="btn" onclick="printTable()">🖨️ طباعة</button>
+      <button class="btn" onclick="backupData()">💾 نسخ احتياطي</button>
+      <button class="btn" onclick="restoreData()">📂 استعادة</button>
+      <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="doRestore(event)"/>
+    </div>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar" id="statsBar">
+  <div class="stat-chip total"><span>📋</span><span>المجموع:</span><span class="num" id="statTotal">0</span></div>
+  <div class="stat-chip red-stat"><span>🔴</span><span>منتهية المدة:</span><span class="num" id="statExpired">0</span></div>
+  <div class="stat-chip yellow-stat"><span>🟡</span><span>متاح الدخول:</span><span class="num" id="statActive">0</span></div>
+  <div class="stat-chip green-stat"><span>✅</span><span>تم الدخول:</span><span class="num" id="statEntered">0</span></div>
+</div>
+
+<!-- MAIN -->
+<div class="main-wrap">
+  <!-- Search -->
+  <div class="search-bar">
+    <div class="search-input-wrap">
+      <input type="text" id="searchInput" placeholder="🔍 بحث في جميع الحقول..." oninput="renderTable()"/>
+    </div>
+    <div class="filter-chips">
+      <span class="filter-chip active" data-filter="all" onclick="setFilter('all',this)">الكل</span>
+      <span class="filter-chip red-chip" data-filter="expired" onclick="setFilter('expired',this)">🔴 منتهية</span>
+      <span class="filter-chip" data-filter="active" onclick="setFilter('active',this)">🟡 متاح</span>
+      <span class="filter-chip" data-filter="entered" onclick="setFilter('entered',this)">✅ تم الدخول</span>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap" id="tableWrap">
+    <table id="mainTable">
+      <thead id="tableHead"></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== ADD/EDIT MODAL ===== -->
+<div class="overlay" id="formOverlay" onclick="closeOnOutside(event,'formOverlay','formModal')">
+  <div class="modal" id="formModal">
+    <div class="modal-header">
+      <h2 id="modalTitle">إضافة سجل جديد</h2>
+      <button class="btn btn-icon" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" id="formGrid">
+        <!-- Dynamic form fields -->
+      </div>
+
+      <!-- Custom fields area -->
+      <div class="custom-fields-section" id="customFieldsInForm">
+        <h4>⚙️ الحقول المضافة</h4>
+        <div id="customFieldsValues"></div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <div class="checkbox-wrap">
+          <input type="checkbox" id="enteredCheck"/>
+          <label for="enteredCheck">✅ تم الدخول</label>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-group" style="margin-top:12px;">
+        <label>📝 الملاحظات</label>
+        <textarea id="notesField" rows="3" placeholder="أدخل أي ملاحظات..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-gold" onclick="saveRecord()">💾 حفظ السجل</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CUSTOM FIELD MODAL ===== -->
+<div class="overlay" id="cfOverlay" onclick="closeOnOutside(event,'cfOverlay','cfModal')">
+  <div class="modal" id="cfModal" style="max-width:480px;">
+    <div class="modal-header">
+      <h2>⚙️ إضافة حقل جديد</h2>
+      <button class="btn btn-icon" onclick="document.getElementById('cfOverlay').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>اسم الحقل *</label>
+          <input type="text" id="cfName" placeholder="مثال: رقم السجل التجاري"/>
+        </div>
+        <div class="form-group">
+          <label>نوع الحقل</label>
+          <select id="cfType">
+            <option value="text">نص</option>
+            <option value="number">رقم</option>
+            <option value="date">تاريخ</option>
+            <option value="textarea">نص طويل</option>
+            <option value="select">قائمة اختيار</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>مطلوب؟</label>
+          <select id="cfRequired">
+            <option value="no">اختياري</option>
+            <option value="yes">إلزامي</option>
+          </select>
+        </div>
+        <div class="form-group full" id="cfOptionsWrap" style="display:none">
+          <label>خيارات القائمة (افصل بفاصلة)</label>
+          <input type="text" id="cfOptions" placeholder="مثال: خيار1, خيار2, خيار3"/>
+        </div>
+        <div class="form-group full">
+          <label>وصف / تعليمات (اختياري)</label>
+          <input type="text" id="cfDesc" placeholder="شرح الحقل..."/>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="document.getElementById('cfOverlay').classList.remove('open')">إلغاء</button>
+      <button class="btn btn-gold" onclick="addCustomField()">➕ إضافة الحقل</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== COMPANY DETAIL MODAL ===== -->
+<div class="overlay" id="detailOverlay" onclick="closeOnOutside(event,'detailOverlay','detailModal')">
+  <div class="modal" id="detailModal" style="max-width:860px;">
+    <div class="modal-header">
+      <h2 id="detailTitle">تفاصيل الشركة</h2>
+      <button class="btn btn-icon" onclick="document.getElementById('detailOverlay').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" id="detailBody" style="max-height:75vh;overflow-y:auto;"></div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ================================================================
+// DATA STORE
+// ================================================================
+let DB = {
+  records: [],
+  customFields: [],
+  nextId: 1
+};
+
+let currentEditId = null;
+let currentFilter = 'all';
+
+// Default columns definition
+const CORE_COLUMNS = [
+  { key: 'id',       label: 'التسلسل',      width: '60px' },
+  { key: 'company',  label: 'اسم الشركة',   width: '160px' },
+  { key: 'dest',     label: 'الوجهة',       width: '120px' },
+  { key: 'dept',     label: 'المديرية',     width: '120px' },
+  { key: 'docNum',   label: 'رقم الكتاب',   width: '100px' },
+  { key: 'docDate',  label: 'تاريخ الكتاب', width: '110px' },
+  { key: 'dateFrom', label: 'مدة الدخول من', width: '110px' },
+  { key: 'dateTo',   label: 'لغاية',        width: '110px' },
+  { key: 'entered',  label: 'تم الدخول',    width: '90px' },
+  { key: 'notes',    label: 'الملاحظات',    width: '140px' },
+];
+
+// ================================================================
+// INIT
+// ================================================================
+window.addEventListener('DOMContentLoaded', () => {
+  loadFromStorage();
+  buildTableHead();
+  renderTable();
+  updateStats();
+  registerServiceWorker();
+
+  // Custom field type toggle
+  document.getElementById('cfType').addEventListener('change', function() {
+    document.getElementById('cfOptionsWrap').style.display =
+      this.value === 'select' ? 'block' : 'none';
+  });
+});
+
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+}
+
+// ================================================================
+// STORAGE
+// ================================================================
+function saveToStorage() {
+  try {
+    localStorage.setItem('companiesDB', JSON.stringify(DB));
+  } catch(e) { showToast('تعذر الحفظ: مساحة التخزين ممتلئة', 'error'); }
+}
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem('companiesDB');
+    if (raw) DB = JSON.parse(raw);
+    if (!DB.records) DB.records = [];
+    if (!DB.customFields) DB.customFields = [];
+    if (!DB.nextId) DB.nextId = 1;
+  } catch(e) { DB = { records: [], customFields: [], nextId: 1 }; }
+}
+
+// ================================================================
+// RECORD STATUS
+// ================================================================
+function getStatus(rec) {
+  if (rec.entered) return 'entered';
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (rec.dateTo) {
+    const to = new Date(rec.dateTo);
+    if (to < today) return 'expired';
+    return 'active';
+  }
+  return 'none';
+}
+
+// ================================================================
+// TABLE HEAD
+// ================================================================
+function buildTableHead() {
+  const cols = getAllColumns();
+  const tr = document.createElement('tr');
+  cols.forEach(c => {
+    const th = document.createElement('th');
+    th.textContent = c.label;
+    th.style.minWidth = c.width || '100px';
+    tr.appendChild(th);
+  });
+  // Actions column
+  const th = document.createElement('th');
+  th.textContent = 'إجراءات';
+  th.style.minWidth = '120px';
+  tr.appendChild(th);
+  document.getElementById('tableHead').innerHTML = '';
+  document.getElementById('tableHead').appendChild(tr);
+}
+
+function getAllColumns() {
+  return [...CORE_COLUMNS, ...DB.customFields.map(cf => ({
+    key: 'cf_' + cf.id, label: cf.name, width: '120px'
+  }))];
+}
+
+// ================================================================
+// RENDER TABLE
+// ================================================================
+function renderTable() {
+  const search = document.getElementById('searchInput').value.trim().toLowerCase();
+  const cols = getAllColumns();
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+
+  let filtered = [...DB.records];
+
+  // Filter by status
+  if (currentFilter !== 'all') {
+    filtered = filtered.filter(r => getStatus(r) === currentFilter);
+  }
+
+  // Search
+  if (search) {
+    filtered = filtered.filter(r => {
+      return cols.some(c => {
+        const val = getCellValue(r, c.key);
+        return String(val).toLowerCase().includes(search);
+      });
+    });
+  }
+
+  if (filtered.length === 0) {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = cols.length + 1;
+    td.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>لا توجد سجلات</p></div>`;
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    updateStats();
+    return;
+  }
+
+  // Group by company name - find grouped ones
+  const companyGroups = {};
+  DB.records.forEach(r => {
+    const key = (r.company || '').trim().toLowerCase();
+    if (key) {
+      if (!companyGroups[key]) companyGroups[key] = [];
+      companyGroups[key].push(r.id);
+    }
+  });
+
+  filtered.forEach(rec => {
+    const status = getStatus(rec);
+    const tr = document.createElement('tr');
+    tr.className = status === 'expired' ? 'status-expired' :
+                   status === 'active' ? 'status-active' :
+                   status === 'entered' ? 'status-entered' : '';
+    tr.onclick = (e) => { if (!e.target.closest('.actions-cell')) openDetail(rec.id); };
+
+    cols.forEach(c => {
+      const td = document.createElement('td');
+      const val = getCellValue(rec, c.key);
+
+      if (c.key === 'entered') {
+        if (rec.entered) {
+          td.innerHTML = '<span class="entered-badge">تم الدخول</span>';
+        } else {
+          td.textContent = '—';
+        }
+      } else if (c.key === 'dateTo') {
+        if (val) {
+          const expired = status === 'expired';
+          const active = status === 'active';
+          td.innerHTML = `<span class="${expired ? 'date-expired' : active ? 'date-active' : ''}">${formatDate(val)}</span>`;
+        } else { td.textContent = '—'; }
+      } else if (c.key === 'dateFrom') {
+        td.textContent = val ? formatDate(val) : '—';
+      } else if (c.key === 'docDate') {
+        td.textContent = val ? formatDate(val) : '—';
+      } else if (c.key === 'company') {
+        const compKey = (rec.company||'').trim().toLowerCase();
+        const grpCount = companyGroups[compKey] ? companyGroups[compKey].length : 1;
+        td.innerHTML = `<strong>${escHtml(val||'')}</strong>${grpCount > 1 ? `<br><small style="color:var(--gold-dark)">📎 ${grpCount} سجلات</small>` : ''}`;
+      } else if (c.key === 'notes') {
+        td.textContent = val ? (val.length > 30 ? val.slice(0,30)+'...' : val) : '—';
+        td.title = val || '';
+      } else {
+        td.textContent = val || '—';
+      }
+      tr.appendChild(td);
+    });
+
+    // Actions
+    const tdAct = document.createElement('td');
+    tdAct.innerHTML = `
+      <div class="actions-cell">
+        <button class="btn btn-sm" onclick="editRecord(${rec.id})" title="تعديل">✏️</button>
+        <button class="btn btn-sm btn-red" onclick="deleteRecord(${rec.id})" title="حذف">🗑️</button>
+        <button class="btn btn-sm" onclick="openDetail(${rec.id})" title="التفاصيل">👁️</button>
+      </div>`;
+    tr.appendChild(tdAct);
+    tbody.appendChild(tr);
+  });
+
+  updateStats();
+}
+
+function getCellValue(rec, key) {
+  if (key.startsWith('cf_')) {
+    const cfId = key.replace('cf_', '');
+    return rec.customValues ? (rec.customValues[cfId] || '') : '';
+  }
+  return rec[key] !== undefined ? rec[key] : '';
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('ar-IQ', { year:'numeric', month:'2-digit', day:'2-digit' });
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ================================================================
+// STATS
+// ================================================================
+function updateStats() {
+  const total = DB.records.length;
+  let expired = 0, active = 0, entered = 0;
+  DB.records.forEach(r => {
+    const s = getStatus(r);
+    if (s === 'expired') expired++;
+    else if (s === 'active') active++;
+    if (r.entered) entered++;
+  });
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statExpired').textContent = expired;
+  document.getElementById('statActive').textContent = active;
+  document.getElementById('statEntered').textContent = entered;
+}
+
+// ================================================================
+// FILTER
+// ================================================================
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderTable();
+}
+
+// ================================================================
+// FORM MODAL - OPEN/CLOSE
+// ================================================================
+function openModal(editId = null) {
+  currentEditId = editId;
+  document.getElementById('modalTitle').textContent = editId ? '✏️ تعديل سجل' : '➕ إضافة سجل جديد';
+  buildFormGrid();
+  buildCustomFieldsInForm();
+
+  if (editId) {
+    const rec = DB.records.find(r => r.id === editId);
+    if (rec) populateForm(rec);
+  } else {
+    clearForm();
+  }
+
+  document.getElementById('formOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('formOverlay').classList.remove('open');
+  currentEditId = null;
+}
+
+function closeOnOutside(e, overlayId, modalId) {
+  if (e.target.id === overlayId) {
+    document.getElementById(overlayId).classList.remove('open');
+  }
+}
+
+// ================================================================
+// BUILD FORM GRID
+// ================================================================
+function buildFormGrid() {
+  const grid = document.getElementById('formGrid');
+  grid.innerHTML = `
+    <div class="form-group">
+      <label>📋 التسلسل</label>
+      <input type="text" id="f_id" readonly placeholder="تلقائي" style="opacity:0.6;"/>
+    </div>
+
+    <div class="form-group">
+      <label>🏢 اسم الشركة</label>
+      <div class="autocomplete-wrap">
+        <input type="text" id="f_company" placeholder="أدخل اسم الشركة..."
+          autocomplete="off" oninput="showAC('f_company','company','ac_company')"/>
+        <div class="autocomplete-list" id="ac_company"></div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>📍 الوجهة</label>
+      <div class="autocomplete-wrap">
+        <input type="text" id="f_dest" placeholder="أدخل الوجهة..."
+          autocomplete="off" oninput="showAC('f_dest','dest','ac_dest')"/>
+        <div class="autocomplete-list" id="ac_dest"></div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>🏛️ المديرية</label>
+      <div class="autocomplete-wrap">
+        <input type="text" id="f_dept" placeholder="أدخل المديرية..."
+          autocomplete="off" oninput="showAC('f_dept','dept','ac_dept')"/>
+        <div class="autocomplete-list" id="ac_dept"></div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>📄 رقم الكتاب</label>
+      <input type="text" id="f_docNum" placeholder="رقم الكتاب..."/>
+    </div>
+
+    <div class="form-group">
+      <label>📅 تاريخ الكتاب</label>
+      <input type="date" id="f_docDate"/>
+    </div>
+
+    <div class="form-group">
+      <label>⏱️ مدة الدخول من</label>
+      <input type="date" id="f_dateFrom"/>
+    </div>
+
+    <div class="form-group">
+      <label>⏱️ لغاية</label>
+      <input type="date" id="f_dateTo"/>
+    </div>
+  `;
+}
+
+// ================================================================
+// AUTOCOMPLETE
+// ================================================================
+function showAC(inputId, field, listId) {
+  const val = document.getElementById(inputId).value.trim().toLowerCase();
+  const list = document.getElementById(listId);
+  if (!val || val.length < 1) { list.classList.remove('open'); return; }
+
+  const matches = [...new Set(
+    DB.records
+      .map(r => r[field])
+      .filter(v => v && v.toLowerCase().includes(val))
+  )].slice(0, 8);
+
+  if (!matches.length) { list.classList.remove('open'); return; }
+
+  list.innerHTML = matches.map(m =>
+    `<div class="autocomplete-item" onclick="selectAC('${inputId}','${listId}','${escHtml(m).replace(/'/g,"\\'")}')">
+      ${escHtml(m)}
+    </div>`
+  ).join('');
+  list.classList.add('open');
+}
+
+function selectAC(inputId, listId, val) {
+  document.getElementById(inputId).value = val;
+  document.getElementById(listId).classList.remove('open');
+}
+
+document.addEventListener('click', e => {
+  document.querySelectorAll('.autocomplete-list').forEach(l => {
+    if (!l.closest('.autocomplete-wrap').contains(e.target)) l.classList.remove('open');
+  });
+});
+
+// ================================================================
+// CUSTOM FIELDS IN FORM
+// ================================================================
+function buildCustomFieldsInForm() {
+  const wrap = document.getElementById('customFieldsValues');
+  if (!DB.customFields.length) {
+    wrap.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem;">لا توجد حقول مضافة بعد</p>';
+    document.getElementById('customFieldsInForm').style.display = DB.customFields.length ? 'block' : 'none';
+    return;
+  }
+  document.getElementById('customFieldsInForm').style.display = 'block';
+  wrap.innerHTML = DB.customFields.map(cf => `
+    <div class="form-group" style="margin-bottom:12px;">
+      <label>${escHtml(cf.name)} <span class="field-type-badge">${getTypeName(cf.type)}</span>${cf.desc ? `<small style="color:var(--text-muted);margin-right:8px;">${escHtml(cf.desc)}</small>` : ''}</label>
+      ${buildFieldInput(cf, 'cf_' + cf.id)}
+    </div>
+  `).join('');
+}
+
+function getTypeName(t) {
+  return { text:'نص', number:'رقم', date:'تاريخ', textarea:'نص طويل', select:'قائمة' }[t] || t;
+}
+
+function buildFieldInput(cf, id) {
+  if (cf.type === 'textarea') return `<textarea id="${id}" rows="2" placeholder="${escHtml(cf.desc||'')}"></textarea>`;
+  if (cf.type === 'select') {
+    const opts = (cf.options||'').split(',').map(o=>o.trim()).filter(Boolean);
+    return `<select id="${id}"><option value="">-- اختر --</option>${opts.map(o=>`<option value="${escHtml(o)}">${escHtml(o)}</option>`).join('')}</select>`;
+  }
+  return `<input type="${cf.type}" id="${id}" placeholder="${escHtml(cf.desc||'')}"/>`;
+}
+
+// ================================================================
+// POPULATE / CLEAR FORM
+// ================================================================
+function populateForm(rec) {
+  document.getElementById('f_id').value = rec.id;
+  document.getElementById('f_company').value = rec.company || '';
+  document.getElementById('f_dest').value = rec.dest || '';
+  document.getElementById('f_dept').value = rec.dept || '';
+  document.getElementById('f_docNum').value = rec.docNum || '';
+  document.getElementById('f_docDate').value = rec.docDate || '';
+  document.getElementById('f_dateFrom').value = rec.dateFrom || '';
+  document.getElementById('f_dateTo').value = rec.dateTo || '';
+  document.getElementById('enteredCheck').checked = !!rec.entered;
+  document.getElementById('notesField').value = rec.notes || '';
+  DB.customFields.forEach(cf => {
+    const el = document.getElementById('cf_' + cf.id);
+    if (el && rec.customValues) el.value = rec.customValues[cf.id] || '';
+  });
+}
+
+function clearForm() {
+  document.getElementById('f_id').value = DB.nextId;
+  ['f_company','f_dest','f_dept','f_docNum','f_docDate','f_dateFrom','f_dateTo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('enteredCheck').checked = false;
+  document.getElementById('notesField').value = '';
+  DB.customFields.forEach(cf => {
+    const el = document.getElementById('cf_' + cf.id);
+    if (el) el.value = '';
+  });
+}
+
+// ================================================================
+// SAVE RECORD
+// ================================================================
+function saveRecord() {
+  const customValues = {};
+  DB.customFields.forEach(cf => {
+    const el = document.getElementById('cf_' + cf.id);
+    if (el) customValues[cf.id] = el.value;
+  });
+
+  const rec = {
+    company: document.getElementById('f_company').value.trim(),
+    dest: document.getElementById('f_dest').value.trim(),
+    dept: document.getElementById('f_dept').value.trim(),
+    docNum: document.getElementById('f_docNum').value.trim(),
+    docDate: document.getElementById('f_docDate').value,
+    dateFrom: document.getElementById('f_dateFrom').value,
+    dateTo: document.getElementById('f_dateTo').value,
+    entered: document.getElementById('enteredCheck').checked,
+    notes: document.getElementById('notesField').value.trim(),
+    customValues,
+    updatedAt: new Date().toISOString()
+  };
+
+  if (currentEditId) {
+    const idx = DB.records.findIndex(r => r.id === currentEditId);
+    if (idx !== -1) {
+      rec.id = currentEditId;
+      rec.createdAt = DB.records[idx].createdAt;
+      DB.records[idx] = rec;
+      showToast('تم تحديث السجل بنجاح ✅', 'success');
+    }
+  } else {
+    rec.id = DB.nextId++;
+    rec.createdAt = new Date().toISOString();
+    DB.records.push(rec);
+    showToast('تم إضافة السجل بنجاح ✅', 'success');
+  }
+
+  saveToStorage();
+  closeModal();
+  buildTableHead();
+  renderTable();
+}
+
+// ================================================================
+// EDIT / DELETE
+// ================================================================
+function editRecord(id) {
+  openModal(id);
+}
+
+function deleteRecord(id) {
+  if (!confirm('هل أنت متأكد من حذف هذا السجل؟')) return;
+  DB.records = DB.records.filter(r => r.id !== id);
+  saveToStorage();
+  renderTable();
+  showToast('تم حذف السجل', 'info');
+}
+
+// ================================================================
+// DETAIL PANEL
+// ================================================================
+function openDetail(id) {
+  const rec = DB.records.find(r => r.id === id);
+  if (!rec) return;
+
+  // Find all records of same company
+  const compKey = (rec.company||'').trim().toLowerCase();
+  const related = compKey
+    ? DB.records.filter(r => (r.company||'').trim().toLowerCase() === compKey)
+    : [rec];
+
+  document.getElementById('detailTitle').textContent = `📋 ${rec.company || 'سجل رقم ' + rec.id}`;
+
+  const body = document.getElementById('detailBody');
+  body.innerHTML = `
+    <div style="margin-bottom:16px;">
+      <h4 style="color:var(--gold-light);margin-bottom:10px;">جميع سجلات هذه الشركة (${related.length})</h4>
+      ${related.map(r => {
+        const s = getStatus(r);
+        const cls = s === 'expired' ? 'expired' : s === 'active' ? 'active' : '';
+        return `
+        <div class="history-entry ${cls}" style="margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <strong style="color:var(--gold-light);">سجل #${r.id}</strong>
+            ${r.entered ? '<span class="entered-badge">تم الدخول</span>' : ''}
+            ${s === 'expired' ? '<span style="color:#ff6644;font-size:0.8rem;">🔴 منتهية المدة</span>' : ''}
+            ${s === 'active' ? '<span style="color:#ffbb44;font-size:0.8rem;">🟡 متاح الدخول</span>' : ''}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;font-size:0.82rem;">
+            ${r.dest ? `<div><span style="color:var(--text-dim)">الوجهة:</span> ${escHtml(r.dest)}</div>` : ''}
+            ${r.dept ? `<div><span style="color:var(--text-dim)">المديرية:</span> ${escHtml(r.dept)}</div>` : ''}
+            ${r.docNum ? `<div><span style="color:var(--text-dim)">رقم الكتاب:</span> ${escHtml(r.docNum)}</div>` : ''}
+            ${r.docDate ? `<div><span style="color:var(--text-dim)">تاريخ الكتاب:</span> ${formatDate(r.docDate)}</div>` : ''}
+            ${r.dateFrom ? `<div><span style="color:var(--text-dim)">من:</span> ${formatDate(r.dateFrom)}</div>` : ''}
+            ${r.dateTo ? `<div><span style="color:var(--text-dim)">لغاية:</span> <span class="${s==='expired'?'date-expired':s==='active'?'date-active':''}">${formatDate(r.dateTo)}</span></div>` : ''}
+          </div>
+          ${Object.keys(r.customValues||{}).length ? `
+            <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+              ${DB.customFields.map(cf => {
+                const v = r.customValues[cf.id];
+                return v ? `<div style="font-size:0.8rem"><span style="color:var(--text-dim)">${escHtml(cf.name)}:</span> ${escHtml(v)}</div>` : '';
+              }).join('')}
+            </div>` : ''}
+          ${r.notes ? `<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:0.8rem;color:var(--text-dim)">📝 ${escHtml(r.notes)}</div>` : ''}
+          <div style="margin-top:6px;display:flex;gap:8px;">
+            <button class="btn btn-sm" onclick="editRecord(${r.id})">✏️ تعديل</button>
+            <button class="btn btn-sm btn-red" onclick="deleteRecord(${r.id});document.getElementById('detailOverlay').classList.remove('open')">🗑️ حذف</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+// ================================================================
+// CUSTOM FIELDS
+// ================================================================
+function openCustomFieldModal() {
+  document.getElementById('cfName').value = '';
+  document.getElementById('cfType').value = 'text';
+  document.getElementById('cfRequired').value = 'no';
+  document.getElementById('cfOptions').value = '';
+  document.getElementById('cfDesc').value = '';
+  document.getElementById('cfOptionsWrap').style.display = 'none';
+  document.getElementById('cfOverlay').classList.add('open');
+}
+
+function addCustomField() {
+  const name = document.getElementById('cfName').value.trim();
+  if (!name) { showToast('يرجى إدخال اسم الحقل', 'error'); return; }
+  const cf = {
+    id: 'cf' + Date.now(),
+    name,
+    type: document.getElementById('cfType').value,
+    required: document.getElementById('cfRequired').value === 'yes',
+    options: document.getElementById('cfOptions').value,
+    desc: document.getElementById('cfDesc').value.trim()
+  };
+  DB.customFields.push(cf);
+  saveToStorage();
+  document.getElementById('cfOverlay').classList.remove('open');
+  buildTableHead();
+  renderTable();
+  showToast(`تم إضافة الحقل "${name}" ✅`, 'success');
+}
+
+// ================================================================
+// EXPORT EXCEL
+// ================================================================
+function exportExcel() {
+  if (!DB.records.length) { showToast('لا توجد بيانات للتصدير', 'error'); return; }
+  const cols = getAllColumns();
+  const data = [cols.map(c => c.label)];
+
+  DB.records.forEach(rec => {
+    data.push(cols.map(c => {
+      const v = getCellValue(rec, c.key);
+      if (c.key === 'entered') return rec.entered ? 'تم الدخول' : '';
+      if (['docDate','dateFrom','dateTo'].includes(c.key)) return v ? formatDate(v) : '';
+      return v || '';
+    }));
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = cols.map(() => ({ wch: 18 }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'الشركات');
+  XLSX.writeFile(wb, `الشركات_${new Date().toLocaleDateString('ar-IQ').replace(/\//g,'-')}.xlsx`);
+  showToast('تم تصدير Excel ✅', 'success');
+}
+
+// ================================================================
+// EXPORT WORD (simple HTML approach)
+// ================================================================
+function exportWord() {
+  if (!DB.records.length) { showToast('لا توجد بيانات للتصدير', 'error'); return; }
+  const cols = getAllColumns();
+  let html = `
+    <html xmlns:o='urn:schemas-microsoft-com:office:office'
+          xmlns:w='urn:schemas-microsoft-com:office:word'
+          xmlns='http://www.w3.org/TR/REC-html40'>
+    <head><meta charset='utf-8'>
+    <style>
+      body { font-family: 'Arial'; direction: rtl; }
+      h1 { color: #8a6500; text-align: center; }
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      th { background: #c8960c; color: white; padding: 8px; border: 1px solid #999; font-size: 10pt; }
+      td { padding: 6px 8px; border: 1px solid #ccc; font-size: 9pt; }
+      tr:nth-child(even) { background: #f9f3e0; }
+      .expired { background: #ffcccc !important; }
+      .active { background: #fff3cc !important; }
+    </style></head>
+    <body dir="rtl">
+    <h1>نظام إدارة الشركات - وزارة الدفاع العراقية</h1>
+    <p style="text-align:center;color:#666;">تاريخ التصدير: ${new Date().toLocaleDateString('ar-IQ')}</p>
+    <table>
+    <thead><tr>${cols.map(c => `<th>${c.label}</th>`).join('')}</tr></thead>
+    <tbody>
+    ${DB.records.map(rec => {
+      const s = getStatus(rec);
+      return `<tr class="${s === 'expired' ? 'expired' : s === 'active' ? 'active' : ''}">
+        ${cols.map(c => {
+          let v = getCellValue(rec, c.key);
+          if (c.key === 'entered') v = rec.entered ? 'تم الدخول' : '';
+          else if (['docDate','dateFrom','dateTo'].includes(c.key)) v = v ? formatDate(v) : '';
+          return `<td>${v || ''}</td>`;
+        }).join('')}
+      </tr>`;
+    }).join('')}
+    </tbody></table></body></html>`;
+
+  const blob = new Blob([html], { type: 'application/msword;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `الشركات_${new Date().toLocaleDateString('ar-IQ').replace(/\//g,'-')}.doc`;
+  a.click(); URL.revokeObjectURL(url);
+  showToast('تم تصدير Word ✅', 'success');
+}
+
+// ================================================================
+// PRINT
+// ================================================================
+function printTable() {
+  window.print();
+}
+
+// ================================================================
+// BACKUP / RESTORE
+// ================================================================
+function backupData() {
+  const backup = JSON.stringify({ ...DB, exportedAt: new Date().toISOString(), version: '1.2' }, null, 2);
+  const blob = new Blob([backup], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `companies_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url);
+  showToast('تم إنشاء النسخ الاحتياطي ✅', 'success');
+}
+
+function restoreData() {
+  document.getElementById('restoreFile').click();
+}
+
+function doRestore(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.records && Array.isArray(data.records)) {
+        if (confirm(`سيتم استعادة ${data.records.length} سجل. هل تريد المتابعة؟`)) {
+          DB = data;
+          saveToStorage();
+          buildTableHead();
+          renderTable();
+          showToast('تم استعادة البيانات ✅', 'success');
+        }
+      } else {
+        showToast('ملف غير صالح', 'error');
+      }
+    } catch {
+      showToast('خطأ في قراءة الملف', 'error');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ================================================================
+// TOAST
+// ================================================================
+function showToast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ================================================================
+// CHECK EXPIRY DATES - auto refresh every minute
+// ================================================================
+setInterval(() => renderTable(), 60000);
+</script>
+</body>
+</html>
